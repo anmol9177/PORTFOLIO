@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
-import { ArrowDown, Download, Briefcase, Upload } from "lucide-react";
+import { ArrowDown, Download, Briefcase } from "lucide-react";
 
 const roles = [
   "Machine Learning Engineer",
@@ -14,14 +14,6 @@ export function Hero() {
   const [roleIndex, setRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState("/resume.pdf");
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const fileUrl = URL.createObjectURL(e.target.files[0]);
-      setResumeUrl(fileUrl);
-    }
-  };
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -80,7 +72,7 @@ export function Hero() {
               transition={{ delay: 0.8 }}
               className="mt-4 text-gray-400 text-lg"
             >
-              Seeking internship & full-time opportunities.
+              Seeking internship &amp; full-time opportunities.
             </motion.p>
           </div>
 
@@ -98,28 +90,14 @@ export function Hero() {
               <Briefcase className="w-5 h-5 group-hover:scale-110 transition-transform" />
               View Projects
             </button>
-            <div className="relative flex gap-2">
-              <a 
-                href={resumeUrl}
-                download="Anmol_Arora_Resume.pdf"
-                className="px-8 py-4 border-2 border-[#00D4FF] text-[#00D4FF] font-semibold rounded-lg hover:bg-[#00D4FF]/10 transition-all flex items-center gap-2 group"
-              >
-                <Download className="w-5 h-5 group-hover:-translate-y-1 transition-transform" />
-                Download Resume
-              </a>
-              <label 
-                title="Upload custom resume"
-                className="px-4 py-4 border-2 border-gray-600 text-gray-400 font-semibold rounded-lg hover:bg-gray-800 hover:text-white cursor-pointer transition-all flex items-center gap-2"
-              >
-                <Upload className="w-5 h-5" />
-                <input 
-                  type="file" 
-                  accept=".pdf" 
-                  className="hidden" 
-                  onChange={handleFileUpload}
-                />
-              </label>
-            </div>
+            <a 
+              href="/resume.pdf"
+              download="Anmol_Arora_Resume.pdf"
+              className="px-8 py-4 border-2 border-[#00D4FF] text-[#00D4FF] font-semibold rounded-lg hover:bg-[#00D4FF]/10 transition-all flex items-center gap-2 group"
+            >
+              <Download className="w-5 h-5 group-hover:-translate-y-1 transition-transform" />
+              Download Resume
+            </a>
           </motion.div>
         </motion.div>
       </div>

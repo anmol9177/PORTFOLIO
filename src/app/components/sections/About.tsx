@@ -1,5 +1,6 @@
-import { motion } from "motion/react";
+import { motion, useMotionValue, useTransform, useSpring } from "motion/react";
 import { Users, Award, Code } from "lucide-react";
+import { useRef } from "react";
 
 const stats = [
   { icon: Code, label: "Projects", value: "15+", target: "projects" },
@@ -23,6 +24,46 @@ const skills = [
 ];
 
 export function About() {
+  const avatarRef = useRef<HTMLDivElement>(null);
+
+  // raw mouse position relative to card center
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // spring-smoothed tilt values (degrees)
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [12, -12]), {
+    stiffness: 200,
+    damping: 20,
+  });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-12, 12]), {
+    stiffness: 200,
+    damping: 20,
+  });
+
+  // glow position for the radial highlight
+  const glowX = useMotionValue(50);
+  const glowY = useMotionValue(50);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = avatarRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const x = (e.clientX - rect.left) / rect.width - 0.5;   // −0.5 → 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    mouseX.set(x);
+    mouseY.set(y);
+    glowX.set((x + 0.5) * 100);
+    glowY.set((y + 0.5) * 100);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+    glowX.set(50);
+    glowY.set(50);
+  };
+
   return (
     <section id="about" className="h-screen snap-start flex items-center justify-center px-6">
       <div className="max-w-6xl mx-auto w-full">
@@ -35,18 +76,48 @@ export function About() {
         >
           {/* Left: Avatar + Stats */}
           <div>
-            {/* Avatar Placeholder */}
-            <div className="relative w-64 h-64 mx-auto mb-8">
+            {/* 3D Tilt Avatar */}
+            <div
+              ref={avatarRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="relative w-64 h-64 mx-auto mb-8"
+              style={{ perspective: "800px" }}
+            >
+              {/* Background glow — static */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#00D4FF] to-cyan-500 blur-xl opacity-50" />
-              <motion.div 
-                animate={{ y: [0, -15, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="relative w-full h-full rounded-full bg-gradient-to-br from-[#00D4FF]/20 to-purple-500/20 border-2 border-[#00D4FF] flex items-center justify-center overflow-hidden shadow-[0_0_50px_rgba(0,212,255,0.3)]"
+
+              {/* Tilt container */}
+              <motion.div
+                style={{ rotateX, rotateY }}
+                className="relative w-full h-full rounded-full border-2 border-[#00D4FF] overflow-hidden shadow-[0_0_50px_rgba(0,212,255,0.3)] cursor-pointer"
               >
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=400')] bg-cover bg-center opacity-80 mix-blend-luminosity" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0A0A0F]/50" />
-                <span className="text-6xl relative z-10 hover:scale-110 transition-transform cursor-crosshair">🧠</span>
+                <img
+                  src="/profile-photo.png"
+                  alt="Anmol Arora"
+                  className="w-full h-full object-cover object-top pointer-events-none select-none"
+                  draggable={false}
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0A0A0F]/30 pointer-events-none" />
+
+                {/* Dynamic highlight that follows cursor */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none opacity-0 hover-parent-glow"
+                  style={{
+                    background: useTransform(
+                      [glowX, glowY],
+                      ([x, y]: number[]) =>
+                        `radial-gradient(circle at ${x}% ${y}%, rgba(0,212,255,0.35) 0%, transparent 60%)`
+                    ),
+                  }}
+                />
               </motion.div>
+
+              {/* Outer rotating ring */}
+              <div className="absolute -inset-3 rounded-full border border-[#00D4FF]/20 animate-[spin_12s_linear_infinite] pointer-events-none">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]" />
+              </div>
             </div>
 
             {/* Stats Grid */}
